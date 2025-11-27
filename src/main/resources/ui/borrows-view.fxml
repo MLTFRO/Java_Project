@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ui.controller.BorrowsController">
+
+    <top>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Button text="Back" onAction="#goBack"/>
+            <Label text="Borrows Management"/>
+        </HBox>
+    </top>
+
+    <center>
+        <VBox spacing="15">
+            <padding>
+                <Insets top="15" right="15" bottom="15" left="15"/>
+            </padding>
+
+            <VBox spacing="10">
+                <HBox spacing="10">
+                    <Label text="Member ID:"/>
+                    <TextField fx:id="borrowMemberIdField"/>
+                    <Button text="Search" onAction="#searchMember"/>
+                </HBox>
+                <Label fx:id="memberInfoLabel"/>
+            </VBox>
+
+            <VBox spacing="10">
+                <HBox spacing="10">
+                    <Label text="Document Title:"/>
+                    <TextField fx:id="borrowDocTitleField"/>
+                    <Button text="Search" onAction="#searchDocument"/>
+                </HBox>
+                <Label fx:id="documentInfoLabel"/>
+            </VBox>
+
+            <VBox spacing="10">
+                <HBox spacing="10">
+                    <Label text="Borrow Date:"/>
+                    <DatePicker fx:id="borrowDateField"/>
+                    <Label text="Expected Return:"/>
+                    <DatePicker fx:id="expectedReturnDateField"/>
+                </HBox>
+
+                <HBox spacing="10">
+                    <Button text="Clear" onAction="#clearFields"/>
+                    <Button text="Create Borrow" onAction="#addBorrow"/>
+                </HBox>
+            </VBox>
+
+            <VBox spacing="10">
+                <Label text="Active Borrows"/>
+                <ScrollPane fitToWidth="true" prefHeight="200">
+                    <VBox fx:id="borrowsListView" spacing="10"/>
+                </ScrollPane>
+            </VBox>
+
+        </VBox>
+    </center>
+
+</BorderPane>

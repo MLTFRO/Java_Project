@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ui.controller.MembersController"
+            style="-fx-background-color: #f5f7fa;">
+    
+    <!-- Top Navigation Bar -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="15" 
+              style="-fx-background-color: linear-gradient(to right, #667eea, #764ba2); -fx-padding: 20;">
+            <Button text="← Back" 
+                    onAction="#goBack"
+                    style="-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20; -fx-cursor: hand;"/>
+            
+            <Region HBox.hgrow="ALWAYS"/>
+            
+            <Label text="👥 Members Management" 
+                   style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            
+            <Region HBox.hgrow="ALWAYS"/>
+            
+            <Label text="" prefWidth="80"/>
+        </HBox>
+    </top>
+    
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;">
+            <VBox spacing="25">
+                <padding>
+                    <Insets top="30" right="40" bottom="30" left="40"/>
+                </padding>
+                
+                <!-- Add Member Section -->
+                <VBox spacing="20"
+                    style="-fx-background-color: white; 
+                            -fx-background-radius: 15; 
+                            -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 15, 0, 0, 3); 
+                            -fx-padding: 25;">
+                    
+                    <!-- Header -->
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label text="➕" style="-fx-font-size: 20px;"/>
+                        <Label text="Add New Member" 
+                            style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2d3748;"/>
+                    </HBox>
+                    
+                    <!-- Input Fields -->
+                    <GridPane hgap="20" vgap="15" alignment="TOP_LEFT">
+                        <columnConstraints>
+                            <ColumnConstraints hgrow="NEVER"/>
+                            <ColumnConstraints hgrow="NEVER"/>
+                        </columnConstraints>
+
+                        <!-- First Name -->
+                        <VBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="0" alignment="TOP_LEFT">
+                            <Label text="First Name *" 
+                                style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #4a5568;"/>
+                            <TextField fx:id="memberNameField" 
+                                    promptText="Enter first name"
+                                    style="-fx-background-color: #f7fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 12; -fx-font-size: 14px;"
+                                    prefWidth="250"/>
+                        </VBox>
+
+                        <!-- Last Name -->
+                        <VBox spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="0" alignment="TOP_LEFT">
+                            <Label text="Last Name *" 
+                                style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #4a5568;"/>
+                            <TextField fx:id="memberSurnameField" 
+                                    promptText="Enter last name"
+                                    style="-fx-background-color: #f7fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 12; -fx-font-size: 14px;"
+                                    prefWidth="250"/>
+                        </VBox>
+                    </GridPane>
+
+                    <!-- Buttons -->
+                    <HBox spacing="15" alignment="CENTER_LEFT">
+                        <Button text="Clear" 
+                                onAction="#clearFields"
+                                style="-fx-background-color: #e2e8f0; -fx-text-fill: #4a5568; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 30; -fx-cursor: hand;"/>
+                        <Button text="Add Member" 
+                                onAction="#addMember"
+                                style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 30; -fx-cursor: hand;"/>
+                    </HBox>
+                </VBox>
+                
+                <!-- Search Section -->
+                <VBox spacing="15" 
+                      style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 15, 0, 0, 3); -fx-padding: 25;">
+                    
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label text="🔍" style="-fx-font-size: 20px;"/>
+                        <Label text="Search Members" 
+                               style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2d3748;"/>
+                    </HBox>
+                    
+                    <HBox spacing="15" alignment="CENTER_LEFT">
+                        <TextField fx:id="searchField" 
+                                   promptText="Search by ID or (name surname)..."
+                                   prefWidth="400"
+                                   style="-fx-background-color: #f7fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 12; -fx-font-size: 14px;"/>
+                        <Button text="Search" 
+                                onAction="#searchMember"
+                                style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 25; -fx-cursor: hand;"/>
+                        <Button text="Show All" 
+                                onAction="#showAllMembers"
+                                style="-fx-background-color: #48bb78; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 25; -fx-cursor: hand;"/>
+                    </HBox>
+                </VBox>
+                
+                <!-- Members List Section -->
+                <VBox spacing="15" 
+                      style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 15, 0, 0, 3); -fx-padding: 25;">
+                    
+                    <HBox alignment="CENTER_LEFT" spacing="15">
+                        <Label text="📋" style="-fx-font-size: 20px;"/>
+                        <Label text="Members List" 
+                               style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2d3748;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="memberCountLabel" 
+                               text="Total: 0 members"
+                               style="-fx-font-size: 13px; -fx-text-fill: #718096; -fx-font-weight: bold;"/>
+                    </HBox>
+                    
+                    <Separator/>
+                    
+                    <!-- Table Header -->
+                    <HBox spacing="10" 
+                          style="-fx-background-color: #f7fafc; -fx-padding: 12; -fx-background-radius: 8;">
+                        <Label text="ID" prefWidth="80" 
+                               style="-fx-font-weight: bold; -fx-text-fill: #4a5568; -fx-font-size: 13px;"/>
+                        <Label text="Name" prefWidth="150" 
+                               style="-fx-font-weight: bold; -fx-text-fill: #4a5568; -fx-font-size: 13px;"/>
+                        <Label text="Surname" prefWidth="150" 
+                               style="-fx-font-weight: bold; -fx-text-fill: #4a5568; -fx-font-size: 13px;"/>
+                        <Label text="Status" prefWidth="120" 
+                               style="-fx-font-weight: bold; -fx-text-fill: #4a5568; -fx-font-size: 13px;"/>
+                        <Label text="Borrows" prefWidth="80" 
+                               style="-fx-font-weight: bold; -fx-text-fill: #4a5568; -fx-font-size: 13px;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label text="Actions" prefWidth="150" 
+                               style="-fx-font-weight: bold; -fx-text-fill: #4a5568; -fx-font-size: 13px;"/>
+                    </HBox>
+                    
+                    <!-- Members ScrollPane -->
+                    <ScrollPane fitToWidth="true" prefHeight="400" 
+                                style="-fx-background-color: transparent; -fx-background: transparent;">
+                        <VBox fx:id="membersListView" spacing="10"/>
+                    </ScrollPane>
+                </VBox>
+                
+            </VBox>
+        </ScrollPane>
+    </center>
+    
+</BorderPane>

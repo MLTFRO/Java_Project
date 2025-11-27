@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ui.controller.DocumentsController"
+            style="-fx-background-color: #f5f7fa;">
+
+    <!-- Top Navigation Bar -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="15" 
+              style="-fx-background-color: linear-gradient(to right, #667eea, #764ba2); -fx-padding: 20;">
+            <Button text="← Back" 
+                    onAction="#goBack"
+                    style="-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20; -fx-cursor: hand;"/>
+            
+            <Region HBox.hgrow="ALWAYS"/>
+            
+            <Label text="📄 Documents Management" 
+                   style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label text="" prefWidth="80"/>
+        </HBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+            <VBox spacing="25">
+                <padding>
+                    <Insets top="30" right="40" bottom="30" left="40"/>
+                </padding>
+
+                <!-- Statistics Cards Section -->
+                <HBox spacing="20" alignment="CENTER">
+                    <!-- Total Documents Card -->
+                    <VBox alignment="CENTER" spacing="10"
+                          style="-fx-background-color: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 10, 0, 0, 5);"
+                          prefWidth="200">
+                        <Label text="📚" style="-fx-font-size: 32px;"/>
+                        <Label fx:id="totalDocsLabel" text="0" 
+                               style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                        <Label text="Total Documents" 
+                               style="-fx-font-size: 13px; -fx-text-fill: rgba(255,255,255,0.9);"/>
+                    </VBox>
+
+                    <!-- Available Documents Card -->
+                    <VBox alignment="CENTER" spacing="10"
+                          style="-fx-background-color: linear-gradient(135deg, #48bb78 0%, #38a169 100%); -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 10, 0, 0, 5);"
+                          prefWidth="200">
+                        <Label text="✅" style="-fx-font-size: 32px;"/>
+                        <Label fx:id="availableDocsLabel" text="0" 
+                               style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                        <Label text="Available" 
+                               style="-fx-font-size: 13px; -fx-text-fill: rgba(255,255,255,0.9);"/>
+                    </VBox>
+
+                    <!-- Borrowed Documents Card -->
+                    <VBox alignment="CENTER" spacing="10"
+                          style="-fx-background-color: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%); -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 10, 0, 0, 5);"
+                          prefWidth="200">
+                        <Label text="📤" style="-fx-font-size: 32px;"/>
+                        <Label fx:id="borrowedDocsLabel" text="0" 
+                               style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                        <Label text="Borrowed" 
+                               style="-fx-font-size: 13px; -fx-text-fill: rgba(255,255,255,0.9);"/>
+                    </VBox>
+
+                    <!-- Genres Count Card -->
+                    <VBox alignment="CENTER" spacing="10"
+                          style="-fx-background-color: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 10, 0, 0, 5);"
+                          prefWidth="200">
+                        <Label text="🎭" style="-fx-font-size: 32px;"/>
+                        <Label fx:id="genresCountLabel" text="0" 
+                               style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                        <Label text="Genres" 
+                               style="-fx-font-size: 13px; -fx-text-fill: rgba(255,255,255,0.9);"/>
+                    </VBox>
+                </HBox>
+
+                <!-- Search Section -->
+                <VBox spacing="15" 
+                      style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 15, 0, 0, 3); -fx-padding: 25;">
+                    
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label text="🔍" style="-fx-font-size: 20px;"/>
+                        <Label text="Search Documents" 
+                               style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2d3748;"/>
+                    </HBox>
+                    
+                    <HBox spacing="15" alignment="CENTER_LEFT">
+                        <TextField fx:id="searchField" 
+                                   promptText="Search by title, author, ISBN, or genre..."
+                                   prefWidth="400"
+                                   style="-fx-background-color: #f7fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 12; -fx-font-size: 14px;"/>
+                        <ComboBox fx:id="searchTypeField" 
+                                  promptText="Search by..."
+                                  prefWidth="150"
+                                  style="-fx-background-color: #f7fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8;"/>
+                        <Button text="🔍 Search" 
+                                onAction="#searchDocument"
+                                style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 25; -fx-cursor: hand;"/>
+                        <Button text="📋 Show All" 
+                                onAction="#showAllDocuments"
+                                style="-fx-background-color: #48bb78; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 25; -fx-cursor: hand;"/>
+                        <Button text="➕ Add Document" 
+                                onAction="#addDocument"
+                                style="-fx-background-color: #9f7aea; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 25; -fx-cursor: hand;"/>
+                    </HBox>
+                </VBox>
+
+                <!-- Documents List Section -->
+                <VBox spacing="15" 
+                      style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 15, 0, 0, 3); -fx-padding: 25;">
+                    
+                    <HBox alignment="CENTER_LEFT" spacing="15">
+                        <Label text="📋" style="-fx-font-size: 20px;"/>
+                        <Label text="Documents Catalog" 
+                               style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2d3748;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="docCountLabel" 
+                               text="Showing 0 documents"
+                               style="-fx-font-size: 13px; -fx-text-fill: #718096; -fx-font-weight: bold;"/>
+                    </HBox>
+                    
+                    <Separator/>
+                    
+                    <!-- Table Header -->
+                    <HBox spacing="10" 
+                          style="-fx-background-color: #f7fafc; -fx-padding: 12; -fx-background-radius: 8;">
+                        <Label text="Title" prefWidth="200" 
+                               style="-fx-font-weight: bold; -fx-text-fill: #4a5568; -fx-font-size: 13px;"/>
+                        <Label text="Author" prefWidth="150" 
+                               style="-fx-font-weight: bold; -fx-text-fill: #4a5568; -fx-font-size: 13px;"/>
+                        <Label text="Genre" prefWidth="120" 
+                               style="-fx-font-weight: bold; -fx-text-fill: #4a5568; -fx-font-size: 13px;"/>
+                        <Label text="Status" prefWidth="100" 
+                               style="-fx-font-weight: bold; -fx-text-fill: #4a5568; -fx-font-size: 13px;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label text="Actions" prefWidth="150" 
+                               style="-fx-font-weight: bold; -fx-text-fill: #4a5568; -fx-font-size: 13px;"/>
+                    </HBox>
+                    
+                    <!-- Documents ScrollPane -->
+                    <ScrollPane fitToWidth="true" prefHeight="400" 
+                                style="-fx-background-color: transparent;">
+                        <VBox fx:id="documentsListView" spacing="10"/>
+                    </ScrollPane>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>
