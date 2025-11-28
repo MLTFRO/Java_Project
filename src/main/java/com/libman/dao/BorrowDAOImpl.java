@@ -68,17 +68,17 @@ public class BorrowDAOImpl implements BorrowDAO {
             stmt.setInt(3, borrow.getMember().getIdMember());
 
             if (borrow.getBorrowDate() != null)
-                stmt.setDate(4, java.sql.Date.valueOf(borrow.getBorrowDate()));
+                stmt.setString(4, borrow.getBorrowDateString());
             else
                 stmt.setNull(4, java.sql.Types.DATE);
 
             if (borrow.getExpectedReturnDate() != null)
-                stmt.setDate(5, java.sql.Date.valueOf(borrow.getExpectedReturnDate()));
+                stmt.setString(5, borrow.getExpectedReturnDateString());
             else
                 stmt.setNull(5, java.sql.Types.DATE);
 
             if (borrow.getReturnDate() != null)
-                stmt.setDate(6, java.sql.Date.valueOf(borrow.getReturnDate()));
+                stmt.setString(6, borrow.getReturnDateString());
             else
                 stmt.setNull(6, java.sql.Types.DATE);
 
@@ -106,7 +106,7 @@ public class BorrowDAOImpl implements BorrowDAO {
             // Set return date to mark as returned
             String updateSql = "UPDATE Borrow SET returnDate = ? WHERE id = ?";
             try (PreparedStatement stmt = conn.prepareStatement(updateSql)) {
-                stmt.setDate(1, java.sql.Date.valueOf(LocalDate.now()));
+                stmt.setString(1, LocalDate.now().toString());
                 stmt.setString(2, borrow.getId());
                 int rows = stmt.executeUpdate();
 
@@ -214,8 +214,7 @@ public class BorrowDAOImpl implements BorrowDAO {
 
     @Override
     public List<Borrow> getLateBorrows() {
-        return getBorrows("SELECT * FROM Borrow WHERE returnDate IS NULL AND expectedReturnDate < ?", 
-                         java.sql.Date.valueOf(LocalDate.now()));
+        return getBorrows("SELECT * FROM Borrow WHERE returnDate IS NULL AND expectedReturnDate < date('now')", null);
     }
 
     @Override
@@ -345,11 +344,10 @@ public class BorrowDAOImpl implements BorrowDAO {
 
     public List<Borrow> getLateBorrowsForMember(int memberId, MemberDAO memberDAO, DocumentDAO documentDAO) throws Exception {
         List<Borrow> lateBorrows = new ArrayList<>();
-        String sql = "SELECT * FROM Borrow WHERE idMember = ? AND returnDate IS NULL AND expectedReturnDate < ?";
+        String sql = "SELECT * FROM Borrow WHERE idMember = ? AND returnDate IS NULL AND expectedReturnDate < date('now')";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, memberId);
-            stmt.setDate(2, java.sql.Date.valueOf(LocalDate.now()));
 
             ResultSet rs = stmt.executeQuery();
             Member member = memberDAO.searchMemberById(memberId);
