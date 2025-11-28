@@ -1,8 +1,8 @@
-# 📚 Library Management System
+# Library Management System
 
 A comprehensive Java-based library management application built with JavaFX, Maven, and SQLite. This system allows librarians to efficiently manage books, magazines, members, and borrowing operations with an intuitive graphical interface.
 
-## ✨ Features
+## Features
 
 ### Document Management
 - **Add, update, and remove** books and magazines
@@ -32,14 +32,14 @@ A comprehensive Java-based library management application built with JavaFX, Mav
 ### User Interface
 - Modern, clean JavaFX interface with intuitive navigation
 - **Color-coded status indicators**:
-  - 🟢 Green for available/on-time
-  - 🟡 Yellow for warnings (3 days until due)
-  - 🔴 Red for overdue/unavailable
+  - Green for available/on-time
+  - Yellow for warnings (3 days until due)
+  - Red for overdue/unavailable
 - **Tabbed interface** for different sections (Active Borrows, Overdue, History)
 - **Interactive cards** for each document and borrow with action buttons
 - **Real-time updates** after each operation
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 - **Java 17** - Core programming language
 - **JavaFX 21** - GUI framework
@@ -49,7 +49,7 @@ A comprehensive Java-based library management application built with JavaFX, Mav
 - **DAO Pattern** - Data access layer architecture
 - **MVC Pattern** - Model-View-Controller design
 
-## 📋 Prerequisites
+## Prerequisites
 
 Before running this project, ensure you have the following installed:
 
@@ -70,7 +70,7 @@ Before running this project, ensure you have the following installed:
    git --version
    ```
 
-## 📥 Installation
+## Installation
 
 ### Option 1: Clone from Git (if available)
 ```bash
@@ -84,7 +84,7 @@ unzip library-management-system.zip
 cd library-management-system
 ```
 
-## 🚀 Running the Project
+## Running the Project
 
 ### Method 1: Using Maven (Recommended)
 
@@ -168,7 +168,7 @@ library-management-system/
 └── README.md
 ```
 
-## 💾 Database Schema
+## Database Schema
 
 The application uses SQLite with the following tables:
 
@@ -233,7 +233,7 @@ CREATE TABLE Borrow (
 );
 ```
 
-## 🎯 Usage Guide
+## Usage Guide
 
 ### 1. Starting the Application
 When you run the application, you'll see the main dashboard with navigation to three main sections:
@@ -301,7 +301,7 @@ When you run the application, you'll see the main dashboard with navigation to t
 3. Click **Delete** button
 4. Confirm permanent deletion
 
-## ⚙️ Configuration
+## Configuration
 
 ### Database Location
 The SQLite database file (`library.db`) is created automatically in the project root directory on first run.
@@ -329,7 +329,7 @@ Default limit is 5 simultaneous borrows. To change it, modify `BorrowsController
 if (selectedMember.getNbBorrows() >= 5) // Change 5 to desired limit
 ```
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Issue: "JavaFX runtime components are missing"
 **Solution:** Ensure you're using the JavaFX Maven plugin to run:
@@ -353,7 +353,7 @@ Do NOT use `java -jar` directly as JavaFX modules need special handling.
 ### Issue: UI components not displaying
 **Solution:** Verify FXML files are in `src/main/resources/ui/` directory and paths in controllers match exactly.
 
-## 🧪 Testing
+## Testing
 
 Run unit tests (if available):
 ```bash
@@ -365,7 +365,7 @@ Run with verbose output:
 mvn clean javafx:run -X
 ```
 
-## 📦 Building for Distribution
+## Building for Distribution
 
 Create a standalone JAR:
 ```bash
@@ -399,7 +399,7 @@ To reset to fresh database, simply delete `library.db` and restart the applicati
 - `DocumentDAOImpl` - Manages documents with inheritance (Book/Magazine)
 - `MemberDAOImpl` - Member operations and penalty tracking
 
-## 🤝 Contributing
+## Contributing
 
 To contribute to this project:
 1. Fork the repository
@@ -408,15 +408,15 @@ To contribute to this project:
 4. Test thoroughly
 5. Submit a pull request
 
-## 📄 License
+## License
 
 This project is created for educational purposes.
 
-## 👥 Authors
+## Authors
 
 Suvomita Roy & Théo Focsa
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - JavaFX Documentation
 - SQLite Documentation
