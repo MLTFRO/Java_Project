@@ -25,6 +25,7 @@ com/libman/dao/DocumentDAO.class
 com/libman/exception/BorrowException.class
 com/libman/model/Magazine.class
 com/libman/model/Book.class
+com/libman/dao/DocumentDAOImpl$2.class
 com/libman/dao/MagazineDAOImpl.class
 com/libman/model/PenaltyStatus.class
 com/libman/dao/BookDAO.class

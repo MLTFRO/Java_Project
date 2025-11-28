@@ -320,13 +320,7 @@ public class LibraryManagerDAO {
             throw new MemberNotFoundException("Member does not exist in the database.");
 
         // Fetch persisted document
-        Document persistedDocument = null;
-        if (document.getIdDoc() > 0) {
-            persistedDocument = documentDAO.getDocumentById(document.getIdDoc());
-        }
-        if (persistedDocument == null && document.getTitle() != null) {
-            persistedDocument = documentDAO.getDocumentByTitle(document.getTitle());
-        }
+        Document persistedDocument = documentDAO.getDocumentById(document.getIdDoc());
         if (persistedDocument == null)
             throw new DocumentNotFoundException("Document does not exist in the database.");
 
@@ -345,8 +339,13 @@ public class LibraryManagerDAO {
             }
         }
 
-        // Create Borrow object
-        Borrow borrow = new Borrow(persistedDocument, persistedMember, LocalDate.now());
+        // Create Borrow object with foreign keys properly set
+        Borrow borrow = new Borrow();
+        borrow.setIdDoc(persistedDocument.getIdDoc());
+        borrow.setIdMember(persistedMember.getIdMember());
+        borrow.setDocument(persistedDocument);
+        borrow.setMember(persistedMember);
+        borrow.setBorrowDate(LocalDate.now());
         borrow.setExpectedReturnDate(LocalDate.now().plusDays(14));
         borrow.setReturnDate(null);
 
@@ -355,20 +354,11 @@ public class LibraryManagerDAO {
         if (!added)
             throw new BorrowException("Failed to add borrow to database.");
 
-        // Update document state
+        // Update document availability
         persistedDocument.setAvailability(false);
-        documentDAO.updateDocumentAttributes(
-            persistedDocument,
-            persistedDocument.getTitle(),
-            persistedDocument.getAuthor(),
-            persistedDocument.getGenre(),
-            persistedDocument instanceof Book book ? book.getIsbn() : null,
-            persistedDocument instanceof Book book ? book.getPageNumber() : null,
-            persistedDocument instanceof Magazine mag ? mag.getNumber() : null,
-            persistedDocument instanceof Magazine mag ? mag.getPeriodicity() : null
-        );
+        documentDAO.updateDocument(persistedDocument);
 
-        // Update member state
+        // Update member's borrow count
         persistedMember.setNbBorrows(persistedMember.getNbBorrows() + 1);
         memberDAO.updateMember(
             persistedMember,
@@ -405,7 +395,9 @@ public class LibraryManagerDAO {
         }
 
         // Mark document as available
-        borrow.getDocument().setAvailability(true);
+        Document document = borrow.getDocument();
+        document.setAvailability(true);
+        documentDAO.updateDocument(document);
         
         // Decrease member's borrow count
         Member member = borrow.getMember();
@@ -434,7 +426,6 @@ public class LibraryManagerDAO {
 
     /**
      * Get all current (unreturned) borrows from the database
-     * FIXED: Now fetches from borrowDAO instead of empty local list
      */
     public List<Borrow> getCurrentBorrows() {
         return borrowDAO.getCurrentBorrows();
@@ -477,24 +468,24 @@ public class LibraryManagerDAO {
     }
 
     public int getActiveBorrowsCount(int memberId) throws Exception {
-            return borrowDAO.countActiveBorrowsForMember(memberId);
-        }
+        return borrowDAO.countActiveBorrowsForMember(memberId);
+    }
 
-        /**
-         * Returns the total penalty for a given member based on overdue borrows.
-         */
-        public double getTotalPenaltyForMember(int memberId) throws Exception {
-            List<Borrow> lateBorrows = borrowDAO.getLateBorrowsForMember(memberId, memberDAO, documentDAO);
-            double totalPenalty = 0;
-            for (Borrow b : lateBorrows) {
-                long daysLate = java.time.temporal.ChronoUnit.DAYS.between(
-                                    b.getExpectedReturnDate(), java.time.LocalDate.now());
-                if (daysLate > 0) {
-                    totalPenalty += daysLate * 0.5; // assuming $0.5 per day late
-                }
+    /**
+     * Returns the total penalty for a given member based on overdue borrows.
+     */
+    public double getTotalPenaltyForMember(int memberId) throws Exception {
+        List<Borrow> lateBorrows = borrowDAO.getLateBorrowsForMember(memberId, memberDAO, documentDAO);
+        double totalPenalty = 0;
+        for (Borrow b : lateBorrows) {
+            long daysLate = ChronoUnit.DAYS.between(
+                                b.getExpectedReturnDate(), LocalDate.now());
+            if (daysLate > 0) {
+                totalPenalty += daysLate * 0.5; // assuming $0.5 per day late
             }
-            return totalPenalty;
         }
+        return totalPenalty;
+    }
 
     public DocumentDAO getDocumentDAO() {
         return documentDAO;
@@ -502,5 +493,9 @@ public class LibraryManagerDAO {
 
     public MemberDAO getMemberDAO() {
         return memberDAO;
+    }
+
+    public BorrowDAO getBorrowDAO() {
+        return borrowDAO;
     }
 }

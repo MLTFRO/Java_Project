@@ -72,33 +72,71 @@ public class DocumentDAOImpl implements DocumentDAO {
     // -------------------- GET --------------------
     @Override
     public Document getDocumentByTitle(String title) throws SQLException {
-        String sql = "SELECT * FROM Document WHERE title = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        // First get the base document info
+        String sqlDoc = "SELECT * FROM Document WHERE title = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sqlDoc)) {
             stmt.setString(1, title);
             ResultSet rs = stmt.executeQuery();
+            
             if (rs.next()) {
-                Document doc;
-                if ("Book".equals(rs.getString("type"))) {
-                    doc = new Book();
-                    ((Book) doc).setIsbn(rs.getString("isbn"));
-                    ((Book) doc).setPageNumber(rs.getInt("pageNumber"));
-                } else {
-                    doc = new Magazine();
-                    ((Magazine) doc).setNumber(rs.getInt("number"));
-                    String periodicityStr = rs.getString("periodicity");
-                    if (periodicityStr != null) {
-                        ((Magazine) doc).setPeriodicity(Periodicity.valueOf(periodicityStr));
+                int idDoc = rs.getInt("id_doc");
+                String docTitle = rs.getString("title");
+                String author = rs.getString("author");
+                String genre = rs.getString("genre");
+                
+                // Check availability by looking at Borrow table
+                boolean available = true;
+                String sqlAvail = "SELECT COUNT(*) FROM Borrow WHERE id_doc = ? AND returnDate IS NULL";
+                try (PreparedStatement stmtAvail = conn.prepareStatement(sqlAvail)) {
+                    stmtAvail.setInt(1, idDoc);
+                    ResultSet rsAvail = stmtAvail.executeQuery();
+                    if (rsAvail.next()) {
+                        available = rsAvail.getInt(1) == 0;
                     }
                 }
-                doc.setIdDoc(rs.getInt("id_doc"));  // crucial
-                doc.setTitle(rs.getString("title"));
-                doc.setAuthor(rs.getString("author"));
-                doc.setGenre(rs.getString("genre"));
-                doc.setAvailability(rs.getBoolean("availability"));
+                
+                // Check if it's a Book
+                String sqlBook = "SELECT * FROM Book WHERE id_doc = ?";
+                try (PreparedStatement stmtBook = conn.prepareStatement(sqlBook)) {
+                    stmtBook.setInt(1, idDoc);
+                    ResultSet rsBook = stmtBook.executeQuery();
+                    
+                    if (rsBook.next()) {
+                        Book book = new Book(docTitle, author, genre, 
+                                            rsBook.getString("isbn"), 
+                                            rsBook.getInt("pageNumber"));
+                        book.setIdDoc(idDoc);  // CRITICAL: Set the ID
+                        book.setAvailability(available);
+                        return book;
+                    }
+                }
+                
+                // Check if it's a Magazine
+                String sqlMag = "SELECT * FROM Magazine WHERE id_doc = ?";
+                try (PreparedStatement stmtMag = conn.prepareStatement(sqlMag)) {
+                    stmtMag.setInt(1, idDoc);
+                    ResultSet rsMag = stmtMag.executeQuery();
+                    
+                    if (rsMag.next()) {
+                        String periodicityStr = rsMag.getString("periodicity");
+                        Magazine magazine = new Magazine(docTitle, author, genre,
+                                                        rsMag.getInt("number"),
+                                                        Periodicity.valueOf(periodicityStr.toUpperCase()));
+                        magazine.setIdDoc(idDoc);  // CRITICAL: Set the ID
+                        magazine.setAvailability(available);
+                        return magazine;
+                    }
+                }
+                
+                // If neither Book nor Magazine, return base Document
+                Document doc = new Document(docTitle, author, genre) {};
+                doc.setIdDoc(idDoc);
+                doc.setAvailability(available);
                 return doc;
             }
         }
-        return null;
+        
+        throw new DocumentNotFoundException("No document found with title: " + title);
     }
 
     public Document getDocumentByAuthor(String author) {
@@ -117,6 +155,7 @@ public class DocumentDAOImpl implements DocumentDAO {
         return null;
     }
 
+    @Override
     public Document getDocumentById(int id) {
         if (id <= 0) return null;
 
@@ -152,9 +191,10 @@ public class DocumentDAOImpl implements DocumentDAO {
                 stmt.setInt(1, id);
                 ResultSet rs = stmt.executeQuery();
                 if (rs.next()) {
-                    String isbn = rs.getString("isbn");
-                    int pageNumber = rs.getInt("pageNumber");
-                    return new Book(baseDoc, isbn, pageNumber);
+                    Book book = new Book(baseDoc, rs.getString("isbn"), rs.getInt("pageNumber"));
+                    book.setIdDoc(id);  // CRITICAL
+                    book.setAvailability(baseDoc.isAvailable());
+                    return book;
                 }
             }
 
@@ -164,11 +204,19 @@ public class DocumentDAOImpl implements DocumentDAO {
                 stmt.setInt(1, id);
                 ResultSet rs = stmt.executeQuery();
                 if (rs.next()) {
-                    int number = rs.getInt("number");
-                    String perStr = rs.getString("periodicity");
-                    Magazine.Periodicity periodicity = Magazine.Periodicity.valueOf(perStr.toUpperCase());
-                    Magazine mag = new Magazine(baseDoc.getTitle(), baseDoc.getAuthor(), baseDoc.getGenre(), number, periodicity);
-                    mag.setIdDoc(id);
+                    String periodicityStr = rs.getString("periodicity");
+                    Periodicity periodicity = Periodicity.DAILY; // default
+                    if (periodicityStr != null && !periodicityStr.isBlank()) {
+                        try {
+                            periodicity = Periodicity.valueOf(periodicityStr.toUpperCase());
+                        } catch (IllegalArgumentException e) {
+                            // fallback default if DB has unexpected value
+                            periodicity = Periodicity.DAILY;
+                        }
+                    }
+                    Magazine mag = new Magazine(baseDoc.getTitle(), baseDoc.getAuthor(), baseDoc.getGenre(),
+                                                rs.getInt("number"), periodicity);
+                    mag.setIdDoc(id); // CRITICAL
                     mag.setAvailability(baseDoc.isAvailable());
                     return mag;
                 }
@@ -217,47 +265,52 @@ public class DocumentDAOImpl implements DocumentDAO {
     }
 
     // -------------------- UPDATE --------------------
+    @Override
     public void updateDocumentAttributes(Document doc,
-                                         String newTitle,
-                                         String newAuthor,
-                                         String newGenre,
-                                         String newIsbn,
-                                         Integer newPageNumber,
-                                         Integer newNumber,
-                                         Periodicity newPeriodicity) {
+                                        String newTitle,
+                                        String newAuthor,
+                                        String newGenre,
+                                        String newIsbn,
+                                        Integer newPageNumber,
+                                        Integer newNumber,
+                                        Periodicity newPeriodicity) {
         if (doc == null) throw new DocumentNotFoundException("Cannot update: document is null");
 
         try {
-            int idDoc = getIdDocForDocument(doc);
+            int idDoc = doc.getIdDoc(); // use existing ID directly
 
+            // Update base document
             String sql = "UPDATE Document SET title = ?, author = ?, genre = ? WHERE id_doc = ?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, newTitle != null ? newTitle : doc.getTitle());
-            stmt.setString(2, newAuthor != null ? newAuthor : doc.getAuthor());
-            stmt.setString(3, newGenre != null ? newGenre : doc.getGenre());
-            stmt.setInt(4, idDoc);
-            stmt.executeUpdate();
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, newTitle != null ? newTitle : doc.getTitle());
+                stmt.setString(2, newAuthor != null ? newAuthor : doc.getAuthor());
+                stmt.setString(3, newGenre != null ? newGenre : doc.getGenre());
+                stmt.setInt(4, idDoc);
+                stmt.executeUpdate();
+            }
 
-            if (doc instanceof Book) {
-                Book b = (Book) doc;
+            // Update child tables
+            if (doc instanceof Book b) {
                 String sqlBook = "UPDATE Book SET isbn = ?, pageNumber = ? WHERE id_doc = ?";
-                PreparedStatement stmtBook = conn.prepareStatement(sqlBook);
-                stmtBook.setString(1, newIsbn != null ? newIsbn : b.getIsbn());
-                stmtBook.setObject(2, newPageNumber != null ? newPageNumber : b.getPageNumber());
-                stmtBook.setInt(3, idDoc);
-                stmtBook.executeUpdate();
-            } else if (doc instanceof Magazine) {
-                Magazine m = (Magazine) doc;
+                try (PreparedStatement stmt = conn.prepareStatement(sqlBook)) {
+                    stmt.setString(1, newIsbn != null ? newIsbn : b.getIsbn());
+                    stmt.setInt(2, newPageNumber != null ? newPageNumber : b.getPageNumber());
+                    stmt.setInt(3, idDoc);
+                    stmt.executeUpdate();
+                }
+            } else if (doc instanceof Magazine m) {
                 String sqlMag = "UPDATE Magazine SET number = ?, periodicity = ? WHERE id_doc = ?";
-                PreparedStatement stmtMag = conn.prepareStatement(sqlMag);
-                stmtMag.setObject(1, newNumber != null ? newNumber : m.getNumber());
-                stmtMag.setString(2, newPeriodicity != null ? newPeriodicity.name() : m.getPeriodicity().name());
-                stmtMag.setInt(3, idDoc);
-                stmtMag.executeUpdate();
+                try (PreparedStatement stmt = conn.prepareStatement(sqlMag)) {
+                    stmt.setInt(1, newNumber != null ? newNumber : m.getNumber());
+                    stmt.setString(2, newPeriodicity != null ? newPeriodicity.name() : m.getPeriodicity().name());
+                    stmt.setInt(3, idDoc);
+                    stmt.executeUpdate();
+                }
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new RuntimeException("Failed to update document", e);
         }
     }
 
@@ -265,14 +318,14 @@ public class DocumentDAOImpl implements DocumentDAO {
     public void updateDocument(Document doc) {
         if (doc == null) throw new DocumentNotFoundException("Cannot update: document is null");
 
-        String sqlDoc = "UPDATE Document SET title = ?, author = ?, genre = ?, available = ? WHERE id_doc = ?";
+        // Remove 'available' column from UPDATE statement since it doesn't exist in schema
+        String sqlDoc = "UPDATE Document SET title = ?, author = ?, genre = ? WHERE id_doc = ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(sqlDoc)) {
             stmt.setString(1, doc.getTitle());
             stmt.setString(2, doc.getAuthor());
             stmt.setString(3, doc.getGenre());
-            stmt.setBoolean(4, doc.isAvailable());
-            stmt.setInt(5, doc.getIdDoc());
+            stmt.setInt(4, doc.getIdDoc());
 
             int affected = stmt.executeUpdate();
             if (affected == 0) {
